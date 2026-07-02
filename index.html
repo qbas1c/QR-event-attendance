@@ -1,0 +1,791 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF6EE;
+    --surface:#FFFFFF;
+    --ink:#1F2A3C;
+    --navy:#1B2A4A;
+    --gold:#B8925A;
+    --gold-light:#E4D2AE;
+    --success:#3F7A57;
+    --success-bg:#E9F2EC;
+    --danger:#B5483E;
+    --danger-bg:#FBEAE8;
+    --warn:#C08A2E;
+    --warn-bg:#FBF1E0;
+    --border:#E3DACB;
+    --muted:#7C7566;
+  }
+  *{box-sizing:border-box;}
+  #ecs-root{
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    min-height:100%;
+    padding:0;
+    -webkit-font-smoothing:antialiased;
+  }
+  #ecs-root .wrap{max-width:1000px;margin:0 auto;padding:28px 20px 60px;}
+  #ecs-root h1,#ecs-root h2,#ecs-root h3{font-family:'Cormorant Garamond',serif;margin:0;color:var(--navy);}
+  #ecs-root .eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--gold);font-weight:500;
+  }
+  #ecs-root .header{text-align:center;margin-bottom:28px;}
+  #ecs-root .header h1{font-size:38px;font-weight:700;margin-top:6px;}
+  #ecs-root .header p{color:var(--muted);font-size:14px;margin-top:6px;}
+
+  #ecs-root .tabs{
+    display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:5px;margin-bottom:24px;
+  }
+  #ecs-root .tab-btn{
+    flex:1;padding:11px 8px;border:none;background:transparent;border-radius:8px;
+    font-family:'Inter',sans-serif;font-weight:600;font-size:13px;color:var(--muted);
+    cursor:pointer;transition:all .15s ease;
+  }
+  #ecs-root .tab-btn.active{background:var(--navy);color:#fff;}
+  #ecs-root .tab-btn:not(.active):hover{background:var(--bg);color:var(--ink);}
+
+  #ecs-root .panel{display:none;}
+  #ecs-root .panel.active{display:block;animation:ecs-fade .2s ease;}
+  @keyframes ecs-fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  #ecs-root .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:24px;margin-bottom:18px;
+  }
+  #ecs-root label{display:block;font-size:12px;font-weight:600;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+  #ecs-root input[type=text],#ecs-root textarea{
+    width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;
+    font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);background:#fff;
+  }
+  #ecs-root textarea{font-family:'JetBrains Mono',monospace;font-size:12.5px;min-height:160px;resize:vertical;line-height:1.6;}
+  #ecs-root input:focus,#ecs-root textarea:focus{outline:2px solid var(--gold-light);outline-offset:1px;border-color:var(--gold);}
+  #ecs-root .row{display:flex;gap:14px;flex-wrap:wrap;}
+  #ecs-root .row > div{flex:1;min-width:180px;}
+
+  #ecs-root button.primary{
+    background:var(--navy);color:#fff;border:none;border-radius:8px;padding:12px 20px;
+    font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer;
+    transition:background .15s ease;
+  }
+  #ecs-root button.primary:hover{background:#122038;}
+  #ecs-root button.secondary{
+    background:#fff;color:var(--navy);border:1px solid var(--border);border-radius:8px;
+    padding:12px 20px;font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer;
+  }
+  #ecs-root button.secondary:hover{border-color:var(--gold);}
+  #ecs-root button.danger-link{background:none;border:none;color:var(--danger);font-size:12.5px;
+    text-decoration:underline;cursor:pointer;font-family:'Inter',sans-serif;}
+  #ecs-root .btn-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+
+  #ecs-root .hint{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.5;}
+  #ecs-root .status-msg{margin-top:12px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;}
+  #ecs-root .status-msg.ok{display:block;background:var(--success-bg);color:var(--success);}
+  #ecs-root .status-msg.err{display:block;background:var(--danger-bg);color:var(--danger);}
+
+  #ecs-root .stat-strip{display:flex;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+  #ecs-root .stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:16px 20px;flex:1;min-width:130px;}
+  #ecs-root .stat .num{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--navy);}
+  #ecs-root .stat .lbl{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+
+  /* Badges */
+  #ecs-root .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;}
+  #ecs-root .badge{
+    background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;
+    box-shadow:0 1px 3px rgba(27,42,74,.06);
+  }
+  #ecs-root .badge .band{background:linear-gradient(135deg,var(--navy),#28406e);padding:12px 18px;color:#fff;}
+  #ecs-root .badge .band .ev{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--gold-light);}
+  #ecs-root .badge .band .name{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #ecs-root .badge .perforation{border-top:2px dashed var(--border);position:relative;margin:0;}
+  #ecs-root .badge .perforation::before,#ecs-root .badge .perforation::after{
+    content:'';position:absolute;top:-9px;width:18px;height:18px;border-radius:50%;background:var(--bg);border:1px solid var(--border);
+  }
+  #ecs-root .badge .perforation::before{left:-9px;}
+  #ecs-root .badge .perforation::after{right:-9px;}
+  #ecs-root .badge .stub{padding:16px 18px;display:flex;align-items:center;gap:14px;}
+  #ecs-root .badge .qr{flex-shrink:0;width:76px;height:76px;}
+  #ecs-root .badge .qr img,#ecs-root .badge .qr canvas{width:100%;height:100%;}
+  #ecs-root .badge .meta .id{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--navy);}
+  #ecs-root .badge .meta .email{font-size:11.5px;color:var(--muted);margin-top:3px;word-break:break-all;}
+
+  /* Scanner */
+  #ecs-root #reader{width:100%;max-width:420px;margin:0 auto;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+  #ecs-root .scan-result{
+    margin-top:16px;padding:18px;border-radius:12px;text-align:center;display:none;
+  }
+  #ecs-root .scan-result.show{display:block;animation:ecs-fade .2s ease;}
+  #ecs-root .scan-result.ok{background:var(--success-bg);}
+  #ecs-root .scan-result.dup{background:var(--warn-bg);}
+  #ecs-root .scan-result.bad{background:var(--danger-bg);}
+  #ecs-root .scan-result .big{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;}
+  #ecs-root .scan-result.ok .big{color:var(--success);}
+  #ecs-root .scan-result.dup .big{color:var(--warn);}
+  #ecs-root .scan-result.bad .big{color:var(--danger);}
+  #ecs-root .scan-result .sub{font-size:12.5px;color:var(--muted);margin-top:4px;}
+
+  /* Dashboard table */
+  #ecs-root table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  #ecs-root th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+    padding:8px 10px;border-bottom:1px solid var(--border);}
+  #ecs-root td{padding:9px 10px;border-bottom:1px solid var(--border);}
+  #ecs-root .pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600;}
+  #ecs-root .pill.in{background:var(--success-bg);color:var(--success);}
+  #ecs-root .pill.out{background:#F0EDE5;color:var(--muted);}
+
+  #ecs-root .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(27,42,74,.45);z-index:9999;
+    align-items:center;justify-content:center;padding:20px;
+  }
+  #ecs-root .modal-overlay.show{display:flex;}
+  #ecs-root .modal{background:#fff;border-radius:14px;padding:22px;max-width:560px;width:100%;
+    max-height:80vh;display:flex;flex-direction:column;}
+  #ecs-root .modal h3{font-size:20px;margin-bottom:4px;}
+  #ecs-root .modal .hint{margin-bottom:10px;}
+  #ecs-root .modal textarea{flex:1;min-height:220px;font-size:11px;}
+  #ecs-root .modal .btn-row{justify-content:flex-end;}
+
+  /* Confirmation page (shown when a QR link is opened directly) */
+  #ecs-confirm{
+    display:none;min-height:100vh;align-items:center;justify-content:center;
+    background:linear-gradient(160deg,var(--navy),#0F1B33);padding:24px;
+  }
+  #ecs-confirm.show{display:flex;}
+  #ecs-confirm .cc{
+    background:#fff;border-radius:18px;padding:40px 32px;max-width:420px;width:100%;
+    text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);
+  }
+  #ecs-confirm .icon{
+    width:72px;height:72px;border-radius:50%;margin:0 auto 18px;display:flex;
+    align-items:center;justify-content:center;font-size:34px;color:#fff;
+  }
+  #ecs-confirm .icon.ok{background:var(--success);}
+  #ecs-confirm .icon.dup{background:var(--warn);}
+  #ecs-confirm .icon.bad{background:var(--danger);}
+  #ecs-confirm .eyebrow2{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+  #ecs-confirm h2{font-family:'Cormorant Garamond',serif;font-size:30px;color:var(--navy);margin-bottom:6px;}
+  #ecs-confirm .sub{font-size:14px;color:var(--muted);margin-bottom:22px;}
+  #ecs-confirm .live-count{
+    background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;
+    font-size:13px;color:var(--muted);
+  }
+  #ecs-confirm .live-count b{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--navy);}
+  #ecs-confirm .live-count .dot{display:inline-block;width:7px;height:7px;border-radius:50%;
+    background:var(--success);margin-right:5px;}
+  #ecs-confirm .close-note{margin-top:18px;font-size:12px;color:var(--muted);}
+
+  @media print{
+    body *{visibility:hidden;}
+    #ecs-print-area, #ecs-print-area *{visibility:visible;}
+    #ecs-print-area{position:absolute;top:0;left:0;width:100%;}
+    #ecs-root .badge-grid{grid-template-columns:repeat(2,1fr);gap:16px;}
+    #ecs-root .badge{break-inside:avoid;}
+  }
+</style>
+
+<div id="ecs-root">
+  <div class="wrap" id="ecs-main-wrap">
+    <div class="header">
+      <div class="eyebrow">Attendance · Check-In</div>
+      <h1 id="ecs-title">Event Check-In System</h1>
+      <p>Generate unique QR badges, then scan at the door for live attendance</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="setup">1 · Setup List</button>
+      <button class="tab-btn" data-tab="badges">2 · Badges</button>
+      <button class="tab-btn" data-tab="scan">3 · Scan</button>
+      <button class="tab-btn" data-tab="dash">4 · Dashboard</button>
+    </div>
+
+    <!-- SETUP -->
+    <div class="panel active" data-panel="setup">
+      <div class="card">
+        <div class="row">
+          <div>
+            <label>Event name</label>
+            <input type="text" id="ecs-event-name" placeholder="e.g. Annual Gala 2026" value="Annual Gala 2026">
+          </div>
+          <div>
+            <label>ID prefix</label>
+            <input type="text" id="ecs-prefix" placeholder="e.g. GALA26" value="GALA26">
+          </div>
+        </div>
+        <div class="row" style="margin-top:16px;">
+          <div>
+            <label>Public link to this page (optional)</label>
+            <input type="text" id="ecs-base-url" placeholder="Leave blank to auto-detect from address bar">
+          </div>
+        </div>
+        <div class="hint" style="margin-top:6px;">For QR codes to open a "You're checked in" confirmation page when scanned by <em>any</em> phone camera (not just this app's built-in scanner), this page needs to live at a public link — e.g. publish/share this artifact and paste that link here first. Leave blank to use the current address bar URL.</div>
+        <div style="margin-top:16px;">
+          <label>Attendee list — paste Name, Email, Contact # (one per line)</label>
+          <textarea id="ecs-paste" placeholder="John Doe, john.doe@gmail.com, 09171234567
+Juan Dela Cruz, jdelacruz@outlook.com, 09281234567"></textarea>
+          <div class="hint">Paste directly from Excel/Sheets (tab-separated) or use commas. First row is auto-skipped if it looks like a header. Each person gets a unique ID and QR code — none of the data is sent anywhere, it's stored only in this app's own storage.</div>
+        </div>
+        <div class="btn-row">
+          <button class="primary" id="ecs-generate-btn">Generate unique QR codes</button>
+          <button class="secondary" id="ecs-load-sample">Load sample data</button>
+        </div>
+        <div class="status-msg" id="ecs-setup-status"></div>
+      </div>
+    </div>
+
+    <!-- BADGES -->
+    <div class="panel" data-panel="badges">
+      <div class="card" style="margin-bottom:14px;">
+        <div class="btn-row" style="margin-top:0;">
+          <button class="primary" id="ecs-print-btn">Print all badges</button>
+          <span class="hint" style="margin-top:0;" id="ecs-badge-count"></span>
+        </div>
+      </div>
+      <div id="ecs-print-area">
+        <div class="badge-grid" id="ecs-badge-grid"></div>
+      </div>
+    </div>
+
+    <!-- SCAN -->
+    <div class="panel" data-panel="scan">
+      <div class="stat-strip">
+        <div class="stat"><div class="num" id="ecs-stat-in">0</div><div class="lbl">Checked in</div></div>
+        <div class="stat"><div class="num" id="ecs-stat-total">0</div><div class="lbl">Total invited</div></div>
+      </div>
+      <div class="hint" style="margin:-10px 0 14px;"><span style="color:var(--success);">●</span> Live — updates automatically as any device checks people in</div>
+      <div class="card">
+        <div style="text-align:center;">
+          <button class="primary" id="ecs-scan-start">Start camera</button>
+          <button class="secondary" id="ecs-scan-stop" style="display:none;">Stop camera</button>
+        </div>
+        <div id="reader" style="margin-top:16px;"></div>
+        <div class="scan-result" id="ecs-scan-result">
+          <div class="big" id="ecs-scan-name"></div>
+          <div class="sub" id="ecs-scan-sub"></div>
+        </div>
+        <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
+          <label>Or enter ID manually</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="ecs-manual-id" placeholder="e.g. GALA26-001">
+            <button class="secondary" id="ecs-manual-btn">Check in</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="panel" data-panel="dash">
+      <div class="stat-strip">
+        <div class="stat"><div class="num" id="ecs-d-in">0</div><div class="lbl">Checked in</div></div>
+        <div class="stat"><div class="num" id="ecs-d-out">0</div><div class="lbl">Not yet arrived</div></div>
+        <div class="stat"><div class="num" id="ecs-d-total">0</div><div class="lbl">Total invited</div></div>
+      </div>
+      <div class="hint" style="margin:-10px 0 14px;"><span style="color:var(--success);">●</span> Live — updates automatically as any device checks people in</div>
+      <div class="card">
+        <div class="btn-row" style="margin-top:0;">
+          <button class="secondary" id="ecs-refresh-btn">Refresh</button>
+          <button class="secondary" id="ecs-export-btn">Export attendance (.xlsx)</button>
+          <button class="danger-link" id="ecs-reset-btn">Reset all check-ins</button>
+        </div>
+        <div style="margin-top:16px;overflow-x:auto;">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Contact</th><th>Status</th><th>Time</th></tr></thead>
+            <tbody id="ecs-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="ecs-csv-modal">
+    <div class="modal">
+      <h3>Attendance CSV</h3>
+      <div class="hint">Download tried automatically. If nothing saved, select all the text below and copy it (Ctrl/Cmd+A, then Ctrl/Cmd+C), then paste into a new spreadsheet or a plain text file saved as <code>.csv</code>.</div>
+      <textarea id="ecs-csv-text" readonly></textarea>
+      <div class="btn-row">
+        <button class="secondary" id="ecs-csv-copy">Copy to clipboard</button>
+        <button class="secondary" id="ecs-csv-download">Try download again</button>
+        <button class="primary" id="ecs-csv-close">Close</button>
+      </div>
+      <div class="status-msg" id="ecs-csv-status"></div>
+    </div>
+  </div>
+
+  <div id="ecs-confirm">
+    <div class="cc">
+      <div class="eyebrow2" id="ecs-confirm-event">Event Check-In</div>
+      <div class="icon" id="ecs-confirm-icon">✓</div>
+      <h2 id="ecs-confirm-title">Welcome!</h2>
+      <div class="sub" id="ecs-confirm-sub">You're checked in.</div>
+      <div class="live-count"><span class="dot"></span><b id="ecs-confirm-count">0</b> / <span id="ecs-confirm-total">0</span> guests checked in so far</div>
+      <div class="close-note">You can close this page now.</div>
+    </div>
+  </div>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+  const root = document.getElementById('ecs-root');
+  let attendees = [];      // [{id,name,email,phone}]
+  let attendance = {};     // {id: {time: iso}}
+  let html5QrCode = null;
+  let lastScanAt = 0;
+  let pollTimer = null;
+  const POLL_MS = 4000;
+
+  function startPolling(renderFn){
+    stopPolling();
+    pollTimer = setInterval(async ()=>{
+      await loadAll();
+      renderFn();
+    }, POLL_MS);
+  }
+  function stopPolling(){
+    if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  // ---------- storage helpers (Firebase Realtime Database REST API) ----------
+  // 1. Create a free Firebase project -> Realtime Database -> copy its URL below.
+  // 2. Replace the placeholder URL with your own before deploying.
+  const FIREBASE_DB_URL = "https://qr-invite-940a9-default-rtdb.asia-southeast1.firebasedatabase.app/"; // <-- REPLACE THIS
+
+  async function fbGet(path){
+    const res = await fetch(`${FIREBASE_DB_URL}/${path}.json`);
+    if(!res.ok) throw new Error(`Firebase GET ${path} failed: ${res.status}`);
+    return await res.json();
+  }
+  async function fbSet(path, value){
+    const res = await fetch(`${FIREBASE_DB_URL}/${path}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(value)
+    });
+    if(!res.ok) throw new Error(`Firebase PUT ${path} failed: ${res.status}`);
+    return await res.json();
+  }
+
+  async function saveAttendees(){
+    try{ await fbSet('ecs/attendees', attendees); }
+    catch(e){ console.error('save attendees failed', e); alert('Could not save to the database — check FIREBASE_DB_URL and your internet connection.'); }
+  }
+  async function saveAttendance(){
+    try{ await fbSet('ecs/attendance', attendance); }
+    catch(e){ console.error('save attendance failed', e); alert('Could not save check-in — check your internet connection and try again.'); }
+  }
+  async function saveMeta(meta){
+    try{ await fbSet('ecs/meta', meta); }
+    catch(e){ console.error('save meta failed', e); }
+  }
+  async function loadAll(){
+    try{ attendees = (await fbGet('ecs/attendees')) || []; }
+    catch(e){ console.error('load attendees failed', e); attendees = []; }
+    try{ attendance = (await fbGet('ecs/attendance')) || {}; }
+    catch(e){ console.error('load attendance failed', e); attendance = {}; }
+    try{
+      const meta = await fbGet('ecs/meta');
+      if(meta){
+        document.getElementById('ecs-title').textContent = meta.eventName || 'Event Check-In System';
+        const nameEl = document.getElementById('ecs-event-name');
+        const prefixEl = document.getElementById('ecs-prefix');
+        const urlEl = document.getElementById('ecs-base-url');
+        if(nameEl && !nameEl.dataset.userTouched) nameEl.value = meta.eventName || nameEl.value;
+        if(prefixEl && !prefixEl.dataset.userTouched) prefixEl.value = meta.prefix || prefixEl.value;
+        if(urlEl && !urlEl.value) urlEl.value = meta.baseUrl || '';
+      }
+    }catch(e){ /* no meta saved yet */ }
+  }
+
+  // ---------- tabs ----------
+  root.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      root.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      root.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      root.querySelector(`.panel[data-panel="${tab}"]`).classList.add('active');
+      stopPolling();
+      if(tab==='scan'){ await loadAll(); renderScanStats(); startPolling(renderScanStats); }
+      if(tab==='dash'){ await loadAll(); renderDashboard(); startPolling(renderDashboard); }
+      if(tab==='badges'){ await loadAll(); renderBadges(); }
+      if(tab!=='scan' && html5QrCode){ try{ await html5QrCode.stop(); }catch(e){} setScannerUi(false); }
+    });
+  });
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden){ stopPolling(); return; }
+    const activeTab = root.querySelector('.tab-btn.active')?.dataset.tab;
+    if(activeTab==='scan') startPolling(renderScanStats);
+    if(activeTab==='dash') startPolling(renderDashboard);
+  });
+
+  // ---------- parsing ----------
+  function parseInput(text){
+    const lines = text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+    const rows = [];
+    lines.forEach((line,i)=>{
+      const parts = line.includes('\t') ? line.split('\t') : line.split(',');
+      const cleaned = parts.map(p=>p.trim());
+      if(i===0 && cleaned[0] && cleaned[0].toLowerCase()==='name') return; // skip header
+      if(!cleaned[0]) return;
+      rows.push({ name: cleaned[0]||'', email: cleaned[1]||'', phone: cleaned[2]||'' });
+    });
+    return rows;
+  }
+
+  function showStatus(el, msg, ok){
+    el.textContent = msg;
+    el.className = 'status-msg ' + (ok?'ok':'err');
+  }
+
+  document.getElementById('ecs-load-sample').addEventListener('click', ()=>{
+    document.getElementById('ecs-paste').value =
+`John Doe, john.doe@gmail.com, 09171234567
+Juan Dela Cruz, jdelacruz@outlook.com, 09281234567`;
+  });
+
+  document.getElementById('ecs-generate-btn').addEventListener('click', async ()=>{
+    const statusEl = document.getElementById('ecs-setup-status');
+    const prefixRaw = document.getElementById('ecs-prefix').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+    const prefix = prefixRaw || 'EVT';
+    const eventName = document.getElementById('ecs-event-name').value.trim() || 'Event';
+    const rawBaseUrl = document.getElementById('ecs-base-url').value.trim();
+    const baseUrl = (rawBaseUrl || (window.location.origin + window.location.pathname))
+      .replace(/[?#].*$/,'');
+    const rows = parseInput(document.getElementById('ecs-paste').value);
+    if(rows.length===0){
+      showStatus(statusEl, 'No attendees found. Paste at least one row of Name, Email, Contact #.', false);
+      return;
+    }
+    const pad = String(rows.length).length < 3 ? 3 : String(rows.length).length;
+    attendees = rows.map((r,i)=>{
+      const id = prefix + '-' + String(i+1).padStart(pad,'0');
+      return {
+        id, name: r.name, email: r.email, phone: r.phone,
+        qrTarget: `${baseUrl}?id=${encodeURIComponent(id)}`
+      };
+    });
+    attendance = {};
+    document.getElementById('ecs-title').textContent = eventName;
+    await saveAttendees();
+    await saveAttendance();
+    await saveMeta({ eventName, prefix, baseUrl });
+    showStatus(statusEl, `Generated ${attendees.length} unique QR codes linked to ${baseUrl}. Go to "2 · Badges" to view/print, or "3 · Scan" for check-in.`, true);
+  });
+
+  // ---------- badges ----------
+  function renderBadges(){
+    const grid = document.getElementById('ecs-badge-grid');
+    grid.innerHTML = '';
+    document.getElementById('ecs-badge-count').textContent = attendees.length + ' badge(s)';
+    const eventName = document.getElementById('ecs-event-name').value.trim() || 'Event';
+    attendees.forEach(p=>{
+      const card = document.createElement('div');
+      card.className = 'badge';
+      card.innerHTML = `
+        <div class="band">
+          <div class="ev">${escapeHtml(eventName)}</div>
+          <div class="name">${escapeHtml(p.name)}</div>
+        </div>
+        <div class="perforation"></div>
+        <div class="stub">
+          <div class="qr" id="qr-${p.id}"></div>
+          <div class="meta">
+            <div class="id">${p.id}</div>
+            <div class="email">${escapeHtml(p.email||'')}</div>
+          </div>
+        </div>`;
+      grid.appendChild(card);
+      new QRCode(document.getElementById('qr-'+p.id), {
+        text: p.qrTarget || p.id, width: 76, height: 76,
+        colorDark:'#1B2A4A', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M
+      });
+    });
+  }
+  document.getElementById('ecs-print-btn').addEventListener('click', ()=>window.print());
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- scanning ----------
+  function setScannerUi(running){
+    document.getElementById('ecs-scan-start').style.display = running ? 'none' : 'inline-block';
+    document.getElementById('ecs-scan-stop').style.display = running ? 'inline-block' : 'none';
+  }
+
+  function extractId(text){
+    try{
+      const u = new URL(text);
+      const qid = u.searchParams.get('id');
+      if(qid) return qid;
+    }catch(e){ /* not a URL — treat the raw text as the ID */ }
+    return text;
+  }
+
+  async function performCheckIn(rawId, opts){
+    opts = opts || {};
+    const id = extractId(String(rawId).trim());
+    if(!opts.skipReload) await loadAll();
+    const person = attendees.find(a=>a.id.toUpperCase() === id.toUpperCase());
+    if(!person) return { status:'bad', id };
+    if(attendance[person.id]) return { status:'dup', person, time: attendance[person.id].time };
+    attendance[person.id] = { time: new Date().toISOString() };
+    await saveAttendance();
+    return { status:'ok', person };
+  }
+
+  async function checkInById(rawId){
+    const result = await performCheckIn(rawId); // reloads fresh data first (reduces collision window)
+    const resEl = document.getElementById('ecs-scan-result');
+    const nameEl = document.getElementById('ecs-scan-name');
+    const subEl = document.getElementById('ecs-scan-sub');
+    resEl.classList.add('show');
+    if(result.status==='bad'){
+      resEl.className = 'scan-result show bad';
+      nameEl.textContent = 'Not recognized';
+      subEl.textContent = `"${result.id}" doesn't match anyone on the list`;
+    } else if(result.status==='dup'){
+      resEl.className = 'scan-result show dup';
+      nameEl.textContent = result.person.name;
+      subEl.textContent = `Already checked in at ${new Date(result.time).toLocaleTimeString()}`;
+    } else {
+      resEl.className = 'scan-result show ok';
+      nameEl.textContent = result.person.name;
+      subEl.textContent = `Checked in · ${result.person.id}`;
+    }
+    renderScanStats();
+  }
+
+  function renderScanStats(){
+    const total = attendees.length;
+    const inCount = Object.keys(attendance).length;
+    document.getElementById('ecs-stat-in').textContent = inCount;
+    document.getElementById('ecs-stat-total').textContent = total;
+  }
+
+  document.getElementById('ecs-scan-start').addEventListener('click', async ()=>{
+    await loadAll();
+    if(attendees.length===0){
+      alert('No attendee list yet. Go to "1 · Setup List" first.');
+      return;
+    }
+    html5QrCode = new Html5Qrcode('reader');
+    try{
+      await html5QrCode.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: 240 },
+        (decodedText)=>{
+          const now = Date.now();
+          if(now - lastScanAt < 1800) return; // debounce rapid re-fires
+          lastScanAt = now;
+          checkInById(decodedText.trim());
+        },
+        ()=>{} // ignore per-frame scan failures
+      );
+      setScannerUi(true);
+    }catch(e){
+      alert('Could not access the camera. Check browser camera permissions, or use manual entry below.');
+    }
+  });
+  document.getElementById('ecs-scan-stop').addEventListener('click', async ()=>{
+    if(html5QrCode){ try{ await html5QrCode.stop(); }catch(e){} }
+    setScannerUi(false);
+  });
+  document.getElementById('ecs-manual-btn').addEventListener('click', ()=>{
+    const val = document.getElementById('ecs-manual-id').value.trim();
+    if(val) checkInById(val);
+    document.getElementById('ecs-manual-id').value = '';
+  });
+  document.getElementById('ecs-manual-id').addEventListener('keydown', (e)=>{
+    if(e.key==='Enter') document.getElementById('ecs-manual-btn').click();
+  });
+
+  // ---------- dashboard ----------
+  function renderDashboard(){
+    const body = document.getElementById('ecs-table-body');
+    body.innerHTML = '';
+    const inCount = Object.keys(attendance).length;
+    document.getElementById('ecs-d-in').textContent = inCount;
+    document.getElementById('ecs-d-out').textContent = attendees.length - inCount;
+    document.getElementById('ecs-d-total').textContent = attendees.length;
+    attendees.forEach(p=>{
+      const rec = attendance[p.id];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-family:'JetBrains Mono',monospace;">${p.id}</td>
+        <td>${escapeHtml(p.name)}</td>
+        <td>${escapeHtml(p.phone||p.email||'')}</td>
+        <td>${rec ? '<span class="pill in">Checked in</span>' : '<span class="pill out">Not yet</span>'}</td>
+        <td>${rec ? new Date(rec.time).toLocaleTimeString() : '—'}</td>`;
+      body.appendChild(tr);
+    });
+  }
+  document.getElementById('ecs-refresh-btn').addEventListener('click', async ()=>{ await loadAll(); renderDashboard(); });
+
+  function buildRows(){
+    const rows = [['ID','Name','Email','Phone','Status','Time']];
+    attendees.forEach(p=>{
+      const rec = attendance[p.id];
+      const status = rec ? 'Checked in' : 'Not yet arrived';
+      const time = rec ? new Date(rec.time).toLocaleString() : '';
+      rows.push([p.id, p.name, p.email, p.phone, status, time]);
+    });
+    return rows;
+  }
+
+  function buildCsv(rows){
+    return rows.map(r => r.map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  }
+
+  function tryDownloadXlsx(rows){
+    try{
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      ws['!cols'] = [{wch:14},{wch:26},{wch:28},{wch:16},{wch:16},{wch:20}];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
+      XLSX.writeFile(wb, 'attendance.xlsx');
+      return true;
+    }catch(e){
+      console.error('XLSX download failed', e);
+      return false;
+    }
+  }
+
+  function tryDownloadCsv(csv){
+    try{
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'attendance.csv';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url), 2000);
+      return true;
+    }catch(e){
+      console.error('CSV download failed', e);
+      return false;
+    }
+  }
+
+  function openCsvModal(csv, downloadWorked){
+    document.getElementById('ecs-csv-text').value = csv;
+    document.getElementById('ecs-csv-modal').classList.add('show');
+    const statusEl = document.getElementById('ecs-csv-status');
+    if(downloadWorked){
+      showStatus(statusEl, 'The .xlsx download was blocked, so a .csv download started instead — check your downloads folder. If nothing appeared, use Copy to clipboard below.', true);
+    } else {
+      showStatus(statusEl, 'Automatic download was blocked by the browser. Use Copy to clipboard, or select the text below, then paste into a spreadsheet and save as .xlsx.', false);
+    }
+  }
+
+  document.getElementById('ecs-export-btn').addEventListener('click', async ()=>{
+    if(attendees.length===0) await loadAll();
+    if(attendees.length===0){
+      alert('No attendee list yet. Go to "1 · Setup List" first.');
+      return;
+    }
+    const rows = buildRows();
+    const ok = tryDownloadXlsx(rows);
+    if(!ok){
+      const csvOk = tryDownloadCsv(buildCsv(rows));
+      openCsvModal(buildCsv(rows), csvOk);
+    }
+  });
+  document.getElementById('ecs-csv-download').addEventListener('click', ()=>{
+    const csv = document.getElementById('ecs-csv-text').value;
+    const ok = tryDownloadCsv(csv);
+    showStatus(document.getElementById('ecs-csv-status'), ok ? 'CSV download started again.' : 'Still blocked — please copy the text manually.', ok);
+  });
+  document.getElementById('ecs-csv-copy').addEventListener('click', async ()=>{
+    const csv = document.getElementById('ecs-csv-text').value;
+    const statusEl = document.getElementById('ecs-csv-status');
+    try{
+      await navigator.clipboard.writeText(csv);
+      showStatus(statusEl, 'Copied to clipboard. Paste it into a spreadsheet or text file.', true);
+    }catch(e){
+      const ta = document.getElementById('ecs-csv-text');
+      ta.focus(); ta.select();
+      try{
+        document.execCommand('copy');
+        showStatus(statusEl, 'Copied to clipboard. Paste it into a spreadsheet or text file.', true);
+      }catch(e2){
+        showStatus(statusEl, 'Could not auto-copy. The text is selected — press Ctrl/Cmd+C to copy it.', false);
+      }
+    }
+  });
+  document.getElementById('ecs-csv-close').addEventListener('click', ()=>{
+    document.getElementById('ecs-csv-modal').classList.remove('show');
+  });
+  document.getElementById('ecs-reset-btn').addEventListener('click', async ()=>{
+    if(!confirm('Clear all check-in records? Attendee list stays intact.')) return;
+    attendance = {};
+    await saveAttendance();
+    renderDashboard();
+    renderScanStats();
+  });
+
+  // ---------- confirmation page (opened via scanned QR link) ----------
+  async function renderConfirmCounts(){
+    await loadAll();
+    document.getElementById('ecs-confirm-count').textContent = Object.keys(attendance).length;
+    document.getElementById('ecs-confirm-total').textContent = attendees.length;
+  }
+
+  async function showConfirmPage(id){
+    document.getElementById('ecs-main-wrap').style.display = 'none';
+    const confirmEl = document.getElementById('ecs-confirm');
+    confirmEl.classList.add('show');
+    await loadAll();
+    document.getElementById('ecs-confirm-event').textContent = document.getElementById('ecs-title').textContent;
+    const result = await performCheckIn(id, { skipReload: true });
+    const iconEl = document.getElementById('ecs-confirm-icon');
+    const titleEl = document.getElementById('ecs-confirm-title');
+    const subEl = document.getElementById('ecs-confirm-sub');
+    if(result.status==='bad'){
+      iconEl.className = 'icon bad'; iconEl.textContent = '✕';
+      titleEl.textContent = 'Code not recognized';
+      subEl.textContent = `This QR code doesn't match anyone on the guest list.`;
+    } else if(result.status==='dup'){
+      iconEl.className = 'icon dup'; iconEl.textContent = '!';
+      titleEl.textContent = `Welcome back, ${result.person.name.split(' ')[0]}`;
+      subEl.textContent = `You were already checked in at ${new Date(result.time).toLocaleTimeString()}.`;
+    } else {
+      iconEl.className = 'icon ok'; iconEl.textContent = '✓';
+      titleEl.textContent = `You're checked in, ${result.person.name.split(' ')[0]}!`;
+      subEl.textContent = `Registration confirmed · ${result.person.id}`;
+    }
+    document.getElementById('ecs-confirm-count').textContent = Object.keys(attendance).length;
+    document.getElementById('ecs-confirm-total').textContent = attendees.length;
+    startPolling(renderConfirmCounts);
+  }
+
+  // ---------- init ----------
+  (async function init(){
+    if(FIREBASE_DB_URL.includes('YOUR-PROJECT-ID')){
+      const w = document.createElement('div');
+      w.style.cssText = 'background:#B5483E;color:#fff;padding:10px 16px;text-align:center;font-family:Inter,sans-serif;font-size:13px;font-weight:600;';
+      w.textContent = '⚠ FIREBASE_DB_URL is still a placeholder — edit the script near the top of the file and replace it with your real Firebase Realtime Database URL before using this app.';
+      document.body.prepend(w);
+    }
+    await loadAll();
+    renderScanStats();
+    const params = new URLSearchParams(window.location.search);
+    const scannedId = params.get('id');
+    if(scannedId){
+      await showConfirmPage(scannedId);
+    }
+  })();
+})();
+</script>
