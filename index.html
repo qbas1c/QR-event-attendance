@@ -357,11 +357,15 @@ Juan Dela Cruz, Globex Inc, QA Engineer, jdelacruz@outlook.com"></textarea>
   // ---------- storage helpers (Firebase Realtime Database REST API) ----------
   // 1. Create a free Firebase project -> Realtime Database -> copy its URL below.
   // 2. Replace the placeholder URL with your own before deploying.
-  const FIREBASE_DB_URL = "https://qr-invite-940a9-default-rtdb.asia-southeast1.firebasedatabase.app/"; // <-- REPLACE THIS
+  const FIREBASE_DB_URL_RAW = "https://qr-invite-940a9-default-rtdb.asia-southeast1.firebasedatabase.app/"; // <-- REPLACE THIS
+  const FIREBASE_DB_URL = FIREBASE_DB_URL_RAW.replace(/\/+$/,''); // strip trailing slash(es)
 
   async function fbGet(path){
     const res = await fetch(`${FIREBASE_DB_URL}/${path}.json`);
-    if(!res.ok) throw new Error(`Firebase GET ${path} failed: ${res.status}`);
+    if(!res.ok){
+      const body = await res.text().catch(()=> '');
+      throw new Error(`Firebase GET ${path} failed: ${res.status} ${body}`);
+    }
     return await res.json();
   }
   async function fbSet(path, value){
@@ -370,17 +374,20 @@ Juan Dela Cruz, Globex Inc, QA Engineer, jdelacruz@outlook.com"></textarea>
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(value)
     });
-    if(!res.ok) throw new Error(`Firebase PUT ${path} failed: ${res.status}`);
+    if(!res.ok){
+      const body = await res.text().catch(()=> '');
+      throw new Error(`Firebase PUT ${path} failed: ${res.status} ${body}`);
+    }
     return await res.json();
   }
 
   async function saveAttendees(){
     try{ await fbSet('ecs/attendees', attendees); }
-    catch(e){ console.error('save attendees failed', e); alert('Could not save to the database — check FIREBASE_DB_URL and your internet connection.'); }
+    catch(e){ console.error('save attendees failed', e); alert('Could not save to the database:\n' + e.message); }
   }
   async function saveAttendance(){
     try{ await fbSet('ecs/attendance', attendance); }
-    catch(e){ console.error('save attendance failed', e); alert('Could not save check-in — check your internet connection and try again.'); }
+    catch(e){ console.error('save attendance failed', e); alert('Could not save check-in:\n' + e.message); }
   }
   async function saveMeta(meta){
     try{ await fbSet('ecs/meta', meta); }
