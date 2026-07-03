@@ -227,9 +227,9 @@
         </div>
         <div class="hint" style="margin-top:6px;">For QR codes to open a "You're checked in" confirmation page when scanned by <em>any</em> phone camera (not just this app's built-in scanner), this page needs to live at a public link — e.g. publish/share this artifact and paste that link here first. Leave blank to use the current address bar URL.</div>
         <div style="margin-top:16px;">
-          <label>Attendee list — paste Name, Email, Contact # (one per line)</label>
-          <textarea id="ecs-paste" placeholder="John Doe, john.doe@gmail.com, 09171234567
-Juan Dela Cruz, jdelacruz@outlook.com, 09281234567"></textarea>
+          <label>Attendee list — paste Name, Company, Designation, Email (one per line)</label>
+          <textarea id="ecs-paste" placeholder="John Doe, Acme Corp, Marketing Manager, john.doe@gmail.com
+Juan Dela Cruz, Globex Inc, QA Engineer, jdelacruz@outlook.com"></textarea>
           <div class="hint">Paste directly from Excel/Sheets (tab-separated) or use commas. First row is auto-skipped if it looks like a header. Each person gets a unique ID and QR code — none of the data is sent anywhere, it's stored only in this app's own storage.</div>
         </div>
         <div class="btn-row">
@@ -296,7 +296,7 @@ Juan Dela Cruz, jdelacruz@outlook.com, 09281234567"></textarea>
         </div>
         <div style="margin-top:16px;overflow-x:auto;">
           <table>
-            <thead><tr><th>ID</th><th>Name</th><th>Contact</th><th>Status</th><th>Time</th></tr></thead>
+            <thead><tr><th>ID</th><th>Name</th><th>Company</th><th>Designation</th><th>Email</th><th>Status</th><th>Time</th></tr></thead>
             <tbody id="ecs-table-body"></tbody>
           </table>
         </div>
@@ -336,7 +336,7 @@ Juan Dela Cruz, jdelacruz@outlook.com, 09281234567"></textarea>
 <script>
 (function(){
   const root = document.getElementById('ecs-root');
-  let attendees = [];      // [{id,name,email,phone}]
+  let attendees = [];      // [{id,name,company,designation,email}]
   let attendance = {};     // {id: {time: iso}}
   let html5QrCode = null;
   let lastScanAt = 0;
@@ -436,7 +436,7 @@ Juan Dela Cruz, jdelacruz@outlook.com, 09281234567"></textarea>
       const cleaned = parts.map(p=>p.trim());
       if(i===0 && cleaned[0] && cleaned[0].toLowerCase()==='name') return; // skip header
       if(!cleaned[0]) return;
-      rows.push({ name: cleaned[0]||'', email: cleaned[1]||'', phone: cleaned[2]||'' });
+      rows.push({ name: cleaned[0]||'', company: cleaned[1]||'', designation: cleaned[2]||'', email: cleaned[3]||'' });
     });
     return rows;
   }
@@ -448,8 +448,8 @@ Juan Dela Cruz, jdelacruz@outlook.com, 09281234567"></textarea>
 
   document.getElementById('ecs-load-sample').addEventListener('click', ()=>{
     document.getElementById('ecs-paste').value =
-`John Doe, john.doe@gmail.com, 09171234567
-Juan Dela Cruz, jdelacruz@outlook.com, 09281234567`;
+`John Doe, Acme Corp, Marketing Manager, john.doe@gmail.com
+Juan Dela Cruz, Globex Inc, QA Engineer, jdelacruz@outlook.com`;
   });
 
   document.getElementById('ecs-generate-btn').addEventListener('click', async ()=>{
@@ -462,14 +462,14 @@ Juan Dela Cruz, jdelacruz@outlook.com, 09281234567`;
       .replace(/[?#].*$/,'');
     const rows = parseInput(document.getElementById('ecs-paste').value);
     if(rows.length===0){
-      showStatus(statusEl, 'No attendees found. Paste at least one row of Name, Email, Contact #.', false);
+      showStatus(statusEl, 'No attendees found. Paste at least one row of Name, Company, Designation, Email.', false);
       return;
     }
     const pad = String(rows.length).length < 3 ? 3 : String(rows.length).length;
     attendees = rows.map((r,i)=>{
       const id = prefix + '-' + String(i+1).padStart(pad,'0');
       return {
-        id, name: r.name, email: r.email, phone: r.phone,
+        id, name: r.name, company: r.company, designation: r.designation, email: r.email,
         qrTarget: `${baseUrl}?id=${encodeURIComponent(id)}`
       };
     });
@@ -490,10 +490,12 @@ Juan Dela Cruz, jdelacruz@outlook.com, 09281234567`;
     attendees.forEach(p=>{
       const card = document.createElement('div');
       card.className = 'badge';
+      const titleLine = [p.designation, p.company].filter(Boolean).join(' · ');
       card.innerHTML = `
         <div class="band">
           <div class="ev">${escapeHtml(eventName)}</div>
           <div class="name">${escapeHtml(p.name)}</div>
+          ${titleLine ? `<div style="font-size:12px;color:var(--gold-light);margin-top:2px;">${escapeHtml(titleLine)}</div>` : ''}
         </div>
         <div class="perforation"></div>
         <div class="stub">
@@ -623,7 +625,9 @@ Juan Dela Cruz, jdelacruz@outlook.com, 09281234567`;
       tr.innerHTML = `
         <td style="font-family:'JetBrains Mono',monospace;">${p.id}</td>
         <td>${escapeHtml(p.name)}</td>
-        <td>${escapeHtml(p.phone||p.email||'')}</td>
+        <td>${escapeHtml(p.company||'')}</td>
+        <td>${escapeHtml(p.designation||'')}</td>
+        <td>${escapeHtml(p.email||'')}</td>
         <td>${rec ? '<span class="pill in">Checked in</span>' : '<span class="pill out">Not yet</span>'}</td>
         <td>${rec ? new Date(rec.time).toLocaleTimeString() : '—'}</td>`;
       body.appendChild(tr);
@@ -632,12 +636,12 @@ Juan Dela Cruz, jdelacruz@outlook.com, 09281234567`;
   document.getElementById('ecs-refresh-btn').addEventListener('click', async ()=>{ await loadAll(); renderDashboard(); });
 
   function buildRows(){
-    const rows = [['ID','Name','Email','Phone','Status','Time']];
+    const rows = [['ID','Name','Company','Designation','Email','Status','Time']];
     attendees.forEach(p=>{
       const rec = attendance[p.id];
       const status = rec ? 'Checked in' : 'Not yet arrived';
       const time = rec ? new Date(rec.time).toLocaleString() : '';
-      rows.push([p.id, p.name, p.email, p.phone, status, time]);
+      rows.push([p.id, p.name, p.company, p.designation, p.email, status, time]);
     });
     return rows;
   }
@@ -649,7 +653,7 @@ Juan Dela Cruz, jdelacruz@outlook.com, 09281234567`;
   function tryDownloadXlsx(rows){
     try{
       const ws = XLSX.utils.aoa_to_sheet(rows);
-      ws['!cols'] = [{wch:14},{wch:26},{wch:28},{wch:16},{wch:16},{wch:20}];
+      ws['!cols'] = [{wch:14},{wch:22},{wch:22},{wch:20},{wch:28},{wch:16},{wch:20}];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
       XLSX.writeFile(wb, 'attendance.xlsx');
